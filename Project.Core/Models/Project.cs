@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Proj.Core.Models
 {
-    public class Project : BaseEntity<int>
+    public class Project : BaseEntity
     {
         public string Code { get; set; }
 

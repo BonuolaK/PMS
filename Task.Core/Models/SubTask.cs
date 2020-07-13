@@ -3,15 +3,15 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Proj.Core.Models
+namespace TaskSvc.Core.Models
 {
-    public class SubProject : BaseEntity
+    public class SubTask : BaseEntity
     {
-        public Project Parent { get; set; }
+        public Task Parent { get; set; }
 
         public int ParentId { get; set; }
 
-        public Project Child { get; set; }
+        public Task Child { get; set; }
 
         public int ChildId { get; set; }
     }

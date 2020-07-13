@@ -10,6 +10,9 @@ namespace Proj.Core.Database
     public class ProjectDbContext : BaseContext
     {
         public DbSet<Project> Projects { get; set; }
+
+        public DbSet<SubProject> SubProjects { get; set; }
+
         public ProjectDbContext(DbContextOptions options) : base(options)
         {
 

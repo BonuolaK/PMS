@@ -4,9 +4,9 @@ using System.Text;
 
 namespace PMS.Shared.Models
 {
-    public class BaseEntity<T>
+    public class BaseEntity
     {
-        public T Id { get; set; }
+        public int Id { get; set; }
 
         public DateTime DateCreated { get; set; }
 

@@ -8,7 +8,7 @@ using System.Text;
 
 namespace PMS.Shared.DataAccess.EF
 {
-    public class EFRepository<T, TEntity> : IRepository<T> where T : BaseEntity<TEntity>
+    public class EFRepository<T> : IRepository<T> where T : BaseEntity
     {
         private readonly BaseContext _dataContext;
 

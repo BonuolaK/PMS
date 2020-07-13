@@ -13,11 +13,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Proj.Core", "Project.Core\P
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Project.Tests", "Project.Tests\Project.Tests.csproj", "{EDB33345-CD99-4ECA-B70B-C86159621BF1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Task.Api", "Task.Api\Task.Api.csproj", "{03EC44CE-8B0D-4850-BF90-E9E092DDDC5A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TaskSvc.Api", "Task.Api\TaskSvc.Api.csproj", "{03EC44CE-8B0D-4850-BF90-E9E092DDDC5A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Task.Core", "Task.Core\Task.Core.csproj", "{2B8CEAAC-C00F-4FE5-AD1E-905F5F9E7BB1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TaskSvc.Core", "Task.Core\TaskSvc.Core.csproj", "{2B8CEAAC-C00F-4FE5-AD1E-905F5F9E7BB1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Task.Tests", "Task.Tests\Task.Tests.csproj", "{BFE8B6BD-6C64-4D9B-86C0-4EE0AD8E5A9F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TaskSvc.Tests", "Task.Tests\TaskSvc.Tests.csproj", "{BFE8B6BD-6C64-4D9B-86C0-4EE0AD8E5A9F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{D786BAF9-FDAF-400E-A1A1-78A69203DF31}"
 EndProject

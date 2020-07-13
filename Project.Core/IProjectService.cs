@@ -1,10 +1,13 @@
-﻿using System;
+﻿using PMS.Shared.Service;
+using Proj.Core.Models;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Proj.Core
 {
-    public interface IProjectService
+    public interface IProjectService : IBaseService<Project>
     {
+
     }
 }
