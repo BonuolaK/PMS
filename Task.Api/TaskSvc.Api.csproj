@@ -4,5 +4,10 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\PMS.Shared\PMS.Shared.csproj" />
+    <ProjectReference Include="..\Task.Core\TaskSvc.Core.csproj" />
+  </ItemGroup>
+
 
 </Project>

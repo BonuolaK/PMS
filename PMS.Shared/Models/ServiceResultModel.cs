@@ -6,6 +6,10 @@ namespace PMS.Shared.Models
 {
     public class ServiceResultModel<T>
     {
-        public List<string> Messages { get; set; }
+        public List<string> ErrorMessages { get; set; }
+
+        public T Data { get; set; }
+
+        public bool HasError => ErrorMessages.Count > 0;
     }
 }

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TaskSvc.Core
 {
-    public class TaskService : ITaskService
+    public class TaskService 
     {
 
     }

@@ -6,18 +6,18 @@ using System.Text;
 
 namespace PMS.Shared.Service
 {
-    public interface IBaseService<T> where T : BaseEntity
+    public interface IBaseService<TCreateUpdateDto,TEntity, TEntityDto> where TEntity  : BaseEntity
     {
-        void Create(T model);
+        ServiceResultModel<TEntity> Create(TCreateUpdateDto model);
 
-        void Update(T model);
+        ServiceResultModel<TEntity> Update(TCreateUpdateDto model);
 
-        T Get(int id);
+        TEntity Get(int id);
 
-        IEnumerable<T> GetAll();
+        IEnumerable<TEntityDto> GetAll();
 
-        IEnumerable<T> GetAll(Expression<Func<T, bool>> expression);
+        IEnumerable<TEntityDto> GetAll(Expression<Func<TEntity, bool>> expression);
 
-        void Delete(int id);
+        ServiceResultModel<int> Delete(int id);
     }
 }

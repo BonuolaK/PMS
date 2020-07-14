@@ -4,8 +4,7 @@ using System.Text;
 
 namespace Proj.Core
 {
-    public class ProjectService : IProjectService
+    public class ProjectService
     {
-
     }
 }
