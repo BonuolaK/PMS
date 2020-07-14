@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Proj.Api", "Proj.Api\Proj.A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Proj.Core", "Project.Core\Proj.Core.csproj", "{30D6E39F-C5DC-4A2B-8A98-3734ECB0E1A4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Project.Tests", "Project.Tests\Project.Tests.csproj", "{EDB33345-CD99-4ECA-B70B-C86159621BF1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Proj.Tests", "Project.Tests\Proj.Tests.csproj", "{EDB33345-CD99-4ECA-B70B-C86159621BF1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TaskSvc.Api", "Task.Api\TaskSvc.Api.csproj", "{03EC44CE-8B0D-4850-BF90-E9E092DDDC5A}"
 EndProject
