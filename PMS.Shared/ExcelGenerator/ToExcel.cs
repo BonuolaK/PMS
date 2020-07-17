@@ -17,8 +17,8 @@ namespace PMS.Shared.ExcelGenerator
         {
             // check data provided
 
-            if (!(Data != null && Data.Count > 0))
-                throw new InvalidOperationException("data cannot be null or empty");
+            //if (!(Data != null && Data.Count > 0))
+            //    throw new InvalidOperationException("data cannot be null or empty");
 
             // check if type has attribute data export attribute
             var hasExport = typeof(T).GetCustomAttributes(typeof(DataExport), true).Any();
@@ -64,22 +64,7 @@ namespace PMS.Shared.ExcelGenerator
 
             }
 
-            // add report data
-            int j = 1;
-            var dictionaryData = new List<Dictionary<string, string>>();
-            foreach (T item in Data)
-            {
-                var data = new Dictionary<string, string>();
-                foreach (var prop in addedProperties)
-                {
-                    data.Add(prop, properties[prop].GetValue(item)?.ToString() ?? "");
-                }
-
-                dictionaryData.Add(data);
-
-                j++;
-            }
-
+            
             var workbook = new HSSFWorkbook();
             var sheet = sheetName == null ? workbook.CreateSheet() : workbook.CreateSheet(sheetName);
 
@@ -96,18 +81,38 @@ namespace PMS.Shared.ExcelGenerator
                 cell.SetCellValue(headers[i]);
             }
 
-            //Below loop is fill content  
-            for (int i = 0; i < dictionaryData.Count; i++)
-            {
-                var rowIndex = i + 1;
-                var row = sheet.CreateRow(rowIndex);
-                row.CreateCell(0).SetCellValue(rowIndex.ToString());
-                for (int z = 0; z < addedProperties.Count; z++)
+            if((Data != null && Data.Count > 0)){
+                // add report data
+                int j = 1;
+                var dictionaryData = new List<Dictionary<string, string>>();
+                foreach (T item in Data)
                 {
-                    var cell = row.CreateCell(z + 1);
-                    var o = dictionaryData[i];
-                    cell.SetCellValue(o[addedProperties[z]]);
+                    var data = new Dictionary<string, string>();
+                    foreach (var prop in addedProperties)
+                    {
+                        data.Add(prop, properties[prop].GetValue(item)?.ToString() ?? "");
+                    }
+
+                    dictionaryData.Add(data);
+
+                    j++;
                 }
+
+
+                //Below loop is fill content  
+                for (int i = 0; i < dictionaryData.Count; i++)
+                {
+                    var rowIndex = i + 1;
+                    var row = sheet.CreateRow(rowIndex);
+                    row.CreateCell(0).SetCellValue(rowIndex.ToString());
+                    for (int z = 0; z < addedProperties.Count; z++)
+                    {
+                        var cell = row.CreateCell(z + 1);
+                        var o = dictionaryData[i];
+                        cell.SetCellValue(o[addedProperties[z]]);
+                    }
+                }
+
             }
 
             byte[] returnFile;
