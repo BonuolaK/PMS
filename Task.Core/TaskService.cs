@@ -20,15 +20,13 @@ namespace TaskSvc.Core
     {
         private readonly IRepository<PMSTask> _taskRepo;
         private readonly IRepository<SubTask> _subTaskRepo;
-        private readonly IPublishEndpoint _publisher;
+     //   private readonly IPublishEndpoint _publisher;
 
         public TaskService(IRepository<PMSTask> taskRepo,
-            IRepository<SubTask> subTaskRepo,
-            IPublishEndpoint publishEndpoint)
+            IRepository<SubTask> subTaskRepo)
         {
             _taskRepo = taskRepo;
             _subTaskRepo = subTaskRepo;
-            _publisher = publishEndpoint;
         }
 
 
@@ -139,12 +137,12 @@ namespace TaskSvc.Core
             if(unCompletedProjectTasks == 0)
             {
 
-                await _publisher.Publish<ITaskCompletedMessage>(new TaskCompletedMessage()
-                {
-                    MessageId = new Guid(),
-                    ProjectId = task.ProjectId,
+                //await _publisher.Publish<ITaskCompletedMessage>(new TaskCompletedMessage()
+                //{
+                //    MessageId = new Guid(),
+                //    ProjectId = task.ProjectId,
 
-                }, cancellationToken);
+                //}, cancellationToken);
             }
         }
 
@@ -218,6 +216,25 @@ namespace TaskSvc.Core
                 throw new ArgumentNullException();
 
             _subTaskRepo.Delete(subTask);
+        }
+
+
+        // task microservice can contain project names and be updated when it changes via message bus
+        public IEnumerable<TaskDto> GetTaskReport(DateTime date)
+        {
+            return _taskRepo.GetAllIncluding()
+             .Where(x => (x.StartDate < date && x.State == Enums.TaskState.InProgress)
+             || (x.State == Enums.TaskState.Completed && x.FinishDate > date))
+             .Select(x => new TaskDto
+             {
+                 FinishDate = x.FinishDate,
+                 Id = x.Id,
+                 Name = x.Name,
+                 StartDate = x.StartDate,
+                 State = x.State,
+                 ProjectId = x.ProjectId
+             }).ToList();
+
         }
     }
 }

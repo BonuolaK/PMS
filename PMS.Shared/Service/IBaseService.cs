@@ -19,6 +19,8 @@ namespace PMS.Shared.Service
 
         IEnumerable<TEntityDto> GetAll();
 
+
+
         IEnumerable<TEntityDto> GetAll(Expression<Func<TEntity, bool>> expression);
 
         ServiceResultModel<int> Delete(int id);

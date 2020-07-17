@@ -44,8 +44,6 @@ namespace Task.Api
                     options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
 
-          
-
             services.AddTransient<BaseContext, TaskDbContext>();
             services.AddTransient<IRepository<TaskSvc.Core.Models.PMSTask>, EFRepository<TaskSvc.Core.Models.PMSTask>>();
             services.AddTransient<IRepository<SubTask>, EFRepository<SubTask>>();

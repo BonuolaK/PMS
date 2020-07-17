@@ -5,6 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="PubSub\BackGroundWorker.cs" />
+    <Compile Remove="PubSub\MessageQueueExtension.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="MassTransit.Extensions.DependencyInjection" Version="7.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.6">
       <PrivateAssets>all</PrivateAssets>
@@ -19,6 +24,10 @@
   <ItemGroup>
     <ProjectReference Include="..\PMS.Shared\PMS.Shared.csproj" />
     <ProjectReference Include="..\Project.Core\Proj.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="PubSub\" />
   </ItemGroup>
 
 

@@ -23,7 +23,7 @@ namespace TaskSvc.Tests
         private readonly Mock<IRepository<PMSTask>> _taskRepositoryMock;
         private readonly Mock<IRepository<SubTask>> _subTaskRepoMock;
         private readonly Mock<IHttpService> _httpService;
-        private readonly Mock<IPublishEndpoint> _publisher;
+       // private readonly Mock<IPublishEndpoint> _publisher;
 
         // System under test
         private readonly ITaskService _taskService;
@@ -35,10 +35,10 @@ namespace TaskSvc.Tests
             _taskRepositoryMock = new Mock<IRepository<PMSTask>>();
             _subTaskRepoMock = new Mock<IRepository<SubTask>>();
             _httpService = new Mock<IHttpService>();
-            _publisher = new Mock<IPublishEndpoint>();
+          //  _publisher = new Mock<IPublishEndpoint>();
 
             _taskService = new TaskService(_taskRepositoryMock.Object,
-                _subTaskRepoMock.Object, _publisher.Object);
+                _subTaskRepoMock.Object );
 
             _newTask = new TaskCreateDto
             {
@@ -217,6 +217,29 @@ namespace TaskSvc.Tests
 
             //Assert
             Assert.Contains(CommonConstant.TaskMessages.ChildCannotBeParent, result.ErrorMessages);
+        }
+
+
+        [Theory]
+        [MemberData(nameof(StubGenerator.GetTaskDatabase), MemberType = typeof(StubGenerator))]
+        public void Test_Report_Returns_Filtered_Date(List<PMSTask> existingProject)
+        {
+            PMSTask updatedTask = null;
+
+            // Arrange  
+
+            _taskRepositoryMock.Setup(x => x.GetAllIncluding()).Returns(existingProject.AsQueryable());
+
+            _taskRepositoryMock.Setup(x => x.Update(It.IsAny<PMSTask>()))
+                 .Callback<PMSTask>((x) =>
+                 {
+                     updatedTask = x;
+                 });
+
+            var result = _taskService.GetTaskReport(new DateTime(2020, 6, 1));
+
+            //Assert
+            Assert.Equal(3, result.Count());
         }
 
 

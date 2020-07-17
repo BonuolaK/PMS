@@ -14,5 +14,7 @@ namespace Proj.Core
         ServiceResultModel<Project> TryUpdateStatus(int Id, ProjectState projectStatus = default);
 
         void DeleteSubProject(int subProjectId);
+
+        IEnumerable<ProjectDto> GetProjectReport(DateTime date);
     }
 }

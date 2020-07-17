@@ -10,5 +10,8 @@ namespace TaskSvc.Core
     public interface ITaskService : IBaseService<TaskCreateDto, PMSTask, TaskDto>
     {
         void DeleteSubTask(int subTaskId);
+
+
+        IEnumerable<TaskDto> GetTaskReport(DateTime date);
     }
 }

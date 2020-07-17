@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using PMS.Shared.Constants;
 using PMS.Shared.DataAccess;
+using PMS.Shared.Helpers;
 using PMS.Shared.HttpService;
 using PMS.Shared.Models;
 using Proj.Core.Dtos;
@@ -77,14 +78,14 @@ namespace Proj.Core
             }
 
             // validate task exists
-            var taskServiceResponse =  ValidateTaskExistsForProject(project.Id);
+            var taskServiceResponse = ValidateTaskExistsForProject(project.Id);
             if (taskServiceResponse.HasError)
             {
                 result.AddError(taskServiceResponse.ErrorMessages.ElementAt(0));
                 return result;
             }
 
-            if(taskServiceResponse.Data == true)
+            if (taskServiceResponse.Data == true)
             {
                 result.AddError(CommonConstant.ProjectMessages.TasksBelongToProject);
                 return result;
@@ -95,7 +96,7 @@ namespace Proj.Core
         }
 
         // should utilize some service discovery implementation for more standard work
-        private  ServiceResultModel<bool> ValidateTaskExistsForProject(int projectId)
+        private ServiceResultModel<bool> ValidateTaskExistsForProject(int projectId)
         {
             // validate project has tasks -- API CALL
             _logger.LogInformation("---BEGIN API CALL");
@@ -242,11 +243,11 @@ namespace Proj.Core
                 resultModel.AddError(CommonConstant.ProjectMessages.ProjectCodeExists);
 
             // validate sub project is not a parent to the project
-           int verifyChildCannotBeParent = subProjects.Where(x => x.SubProjects.Select(x => x.Id).Contains(model.Id)).Count();
+            int verifyChildCannotBeParent = subProjects.Where(x => x.SubProjects.Select(x => x.Id).Contains(model.Id)).Count();
 
-            if(verifyChildCannotBeParent > 0)
+            if (verifyChildCannotBeParent > 0)
                 resultModel.AddError(CommonConstant.ProjectMessages.ChildCannotBeParent);
-        
+
             if (!resultModel.HasError)
             {
                 foreach (var project in subProjects)
@@ -257,10 +258,26 @@ namespace Proj.Core
                     });
                 }
             }
-            
+
 
             return resultModel;
 
+        }
+
+        public IEnumerable<ProjectDto> GetProjectReport(DateTime date)
+        {
+            return _projectRepo.GetAllIncluding()
+                .Where(x => (x.StartDate < date && x.State == ProjectState.InProgress)
+                || (x.State == ProjectState.Completed && x.FinishDate > date))
+                .Select(x => new ProjectDto
+                {
+                    Code = x.Code,
+                    FinishDate = x.FinishDate,
+                    Id = x.Id,
+                    Name = x.Name,
+                    StartDate = x.StartDate,
+                    State = x.State
+                }).ToList();
         }
 
         public void DeleteSubProject(int subProjectId)

@@ -1,10 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using PMS.Shared.ExcelGenerator;
+using PMS.Shared.Helpers;
 using PMS.Shared.NetCore;
 using TaskSvc.Core;
 using TaskSvc.Core.Dtos;
@@ -136,5 +141,25 @@ namespace Proj.Api.Controllers
         }
 
 
+        [Route("report")]
+        [HttpGet]
+        public HttpResponseMessage GetTasksInProgressBeforeDate([FromQuery] string date)
+        {
+
+            var dateFormat = date.ToInvariantDateTime("dd/MM/yyyy", out bool succeded);
+
+            if (!succeded)
+                HandleBadRequest(new List<string> { "Invalid date format supplied: Expecting dd/MM/yyyy" });
+
+            var projectInProgress = _taskService.GetTaskReport(dateFormat);
+
+            var file = ExcelGenerator.ToExcel(projectInProgress.ToList());
+
+            var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(file) };
+
+            response.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment") { FileName = $"Task_Report_{date}" };
+            response.Content.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.ms-excel");
+            return response;
+        }
     }
 }
