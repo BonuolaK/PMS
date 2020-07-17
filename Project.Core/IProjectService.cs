@@ -12,5 +12,7 @@ namespace Proj.Core
     public interface IProjectService : IBaseService<ProjectCreateDto, Project, ProjectDto>
     {
         ServiceResultModel<Project> TryUpdateStatus(int Id, ProjectState projectStatus = default);
+
+        void DeleteSubProject(int subProjectId);
     }
 }

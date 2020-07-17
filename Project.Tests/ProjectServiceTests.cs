@@ -1,6 +1,9 @@
-﻿using Moq;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Moq;
 using PMS.Shared.Constants;
 using PMS.Shared.DataAccess;
+using PMS.Shared.HttpService;
 using PMS.Shared.Models;
 using Proj.Core;
 using Proj.Core.Dtos;
@@ -11,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Proj.Tests
@@ -18,6 +22,11 @@ namespace Proj.Tests
     public partial class ProjectServiceTests
     {
         private readonly Mock<IRepository<Project>> _projRepositoryMock;
+        private readonly Mock<IRepository<SubProject>> _subProjectRepoMock;
+        private readonly Mock<IHttpService> _httpService;
+        private readonly Mock<IConfiguration> _mockConfig;
+        private readonly Mock<ILogger<ProjectService>> _mockLogger;
+
         // System under test
         private readonly IProjectService _projectService;
 
@@ -28,7 +37,18 @@ namespace Proj.Tests
         public ProjectServiceTests()
         {
             _projRepositoryMock = new Mock<IRepository<Project>>();
-            _projectService = new ProjectService(_projRepositoryMock.Object);
+            _subProjectRepoMock = new Mock<IRepository<SubProject>>();
+            _httpService = new Mock<IHttpService>();
+            _mockLogger = new Mock<ILogger<ProjectService>>();
+            _mockConfig = new Mock<IConfiguration>();
+
+
+            _projectService = new ProjectService(_projRepositoryMock.Object,
+                _subProjectRepoMock.Object,
+                _httpService.Object,
+                _mockLogger.Object,
+                _mockConfig.Object
+                );
 
             _newProject = new ProjectCreateDto
             {
@@ -64,7 +84,7 @@ namespace Proj.Tests
             var result = _projectService.Create(_newProject);
 
             //Assert
-            Assert.Contains(ErrorConstant.ProjectMessages.SubProjectsNotFound, result.ErrorMessages);
+            Assert.Contains(CommonConstant.ProjectMessages.SubProjectsNotFound, result.ErrorMessages);
         }
 
 
@@ -80,7 +100,7 @@ namespace Proj.Tests
             var result = _projectService.Create(_newProject);
 
             //Assert
-            Assert.Contains(ErrorConstant.ProjectMessages.ProjectsAllCompleted, result.ErrorMessages);
+            Assert.Contains(CommonConstant.ProjectMessages.ProjectsAllCompleted, result.ErrorMessages);
 
         }
 
@@ -95,7 +115,7 @@ namespace Proj.Tests
             var result = _projectService.Create(_newProject);
 
             //Assert
-            Assert.Contains(ErrorConstant.ProjectMessages.ProjectCodeExists, result.ErrorMessages);
+            Assert.Contains(CommonConstant.ProjectMessages.ProjectCodeExists, result.ErrorMessages);
         }
 
 
@@ -169,24 +189,26 @@ namespace Proj.Tests
         }
 
         [Theory]
-        [MemberData(nameof(StubGenerator.GetProject), MemberType = typeof(StubGenerator))]
-        public void When_Update_Project_And_Code_Exists_Stop(Project existingCodeProject)
+        [MemberData(nameof(StubGenerator.GetUpdateProjects), MemberType = typeof(StubGenerator))]
+        public void When_Update_Project_And_Code_Exists_Stop(List<Project> existingCodeProject)
         {
             // Arrange  
             _projRepositoryMock.Setup(x => x.GetAllIncluding()).Returns(Enumerable.Empty<Project>().AsQueryable());
-            _projRepositoryMock.Setup(x => x.Get(_newProject.Id)).Returns(_newProject);
-            _projRepositoryMock.Setup(x => x.Get(It.IsAny<Expression<Func<Project, bool>>>())).Returns(existingCodeProject);
+            _projRepositoryMock.Setup(x => x.GetAllIncluding(x => x.SubProjects)).Returns(existingCodeProject.AsQueryable);
 
-            var result = _projectService.Update(_newProject);
+            //_projRepositoryMock.Setup(x => x.Get(_newProject.Id)).Returns(_newProject);
+            _projRepositoryMock.Setup(x => x.Get(It.IsAny<Expression<Func<Project, bool>>>())).Returns(_newProject);
+
+            var result = _projectService.Update(_updateProject);
 
             //Assert
-            Assert.Contains(ErrorConstant.ProjectMessages.ProjectCodeExists, result.ErrorMessages);
+            Assert.Contains(CommonConstant.ProjectMessages.ProjectCodeExists, result.ErrorMessages);
         }
 
 
         [Theory]
         [MemberData(nameof(StubGenerator.GetUpdateProjects), MemberType = typeof(StubGenerator))]
-        public void When_Update_Project_New_Sub_Projected_Is_Added(List<Project> existingProject )
+        public void When_Update_Project_New_Sub_Projected_Is_Added(List<Project> existingProject)
         {
             Project updatedProject = null;
 
@@ -194,9 +216,9 @@ namespace Proj.Tests
 
             _projRepositoryMock.Setup(x => x.GetAllIncluding()).Returns(existingProject.AsQueryable());
 
-            _projRepositoryMock.Setup(x => x.GetAllIncluding(x=> x.SubProjects)).Returns(existingProject.AsQueryable);
-  
-            _projRepositoryMock.Setup(x => x.Get(It.IsAny<Expression<Func<Project, bool>>>())).Returns((Project) null);
+            _projRepositoryMock.Setup(x => x.GetAllIncluding(x => x.SubProjects)).Returns(existingProject.AsQueryable);
+
+            _projRepositoryMock.Setup(x => x.Get(It.IsAny<Expression<Func<Project, bool>>>())).Returns((Project)null);
 
 
             _projRepositoryMock.Setup(x => x.Update(It.IsAny<Project>()))
@@ -210,6 +232,68 @@ namespace Proj.Tests
             //Assert
             Assert.Contains(6, result.Data.SubProjects.Select(x => x.ChildId));
         }
+
+
+        [Fact]
+        public void When_Update_Project_New_SubProjects_Cannot_Be_A_Parent()
+        {
+
+            var parentProjectToUpdate = new Project
+            {
+                Code = "proj_1",
+                State = Core.Enums.ProjectState.Completed,
+                Id = 1,
+                SubProjects = new List<SubProject>()
+            };
+
+            var new_SubProjects_Having_Parent_As_Child = new List<Project>
+                 {
+                    new Project{
+                        Code = "proj_2",
+                        State = Core.Enums.ProjectState.Planned,
+                        Id = 3,
+                        SubProjects = new List<SubProject>(){
+                            new SubProject{Id = 2,
+                                 Child = new Project{ State = Core.Enums.ProjectState.Completed},
+                                ChildId = 1,
+                                ParentId = 2 
+                            }
+                        },
+                 },
+                      new Project{
+                          Code = "proj_6",
+                          State = Core.Enums.ProjectState.Planned,
+                          Id = 6,
+                         SubProjects = new List<SubProject>(){
+                            new SubProject{
+                                Id = 3,
+                                ChildId = 1, ParentId = 2,
+                                Child = new Project{ 
+                                    State = Core.Enums.ProjectState.Completed
+                                },
+
+                            }
+                        }
+                      }
+                };
+
+            // Arrange  
+            _projRepositoryMock.Setup(x => x.GetAllIncluding(x => x.SubProjects))
+                .Returns(new List<Project> { parentProjectToUpdate }.AsQueryable());
+
+            _projRepositoryMock.Setup(x => x.GetAllIncluding())
+                .Returns(new_SubProjects_Having_Parent_As_Child.AsQueryable());
+
+            _projRepositoryMock.Setup(x => x.Get(It.IsAny<Expression<Func<Project, bool>>>()))
+                .Returns((Project)null);
+
+
+            var result = _projectService.Update(_updateProject);
+
+            //Assert
+            Assert.Contains(CommonConstant.ProjectMessages.ChildCannotBeParent, result.ErrorMessages);
+        }
+
 
 
 
@@ -237,30 +321,90 @@ namespace Proj.Tests
         }
 
 
-        //[Fact]
-        //public void When_UpdatingProject_SubProjects_Cannot_Include_ParentProjects()
-        //{
+        [Fact]
+        public void When_Removing_SubProject_Ensure_Deletes()
+        {
 
-        //}
+            SubProject mySubProject = new SubProject();
+            // Arrange  
+            _subProjectRepoMock.Setup(x => x.Get(It.IsAny<int>()))
+                .Returns(mySubProject);
+
+            _subProjectRepoMock.Setup(x => x.Delete(It.IsAny<SubProject>()));
+
+            // Act  
+            _projectService.DeleteSubProject(1);
+
+            //Assert
+            _subProjectRepoMock.Verify(x => x.Delete(It.IsAny<SubProject>()), Times.Once);
+
+        }
 
 
-        //[Fact]
-        //public void When_UpdatingProject_SubProjects_Cannot_Include_ParentProjects()
-        //{
+        [Fact]
+        public void When_Deleting_Project_And_Is_Sub_Project_Return_Error()
+        {
 
-        //}
+            Project myProject = new Project();
+            List<SubProject> existingSubProjects = new List<SubProject>() { new SubProject { } };
 
-        //[Fact]
-        //public void Can_Delete()
-        //{
+            // Arrange  
+            _projRepositoryMock.Setup(x => x.Get(It.IsAny<int>()))
+                .Returns(myProject);
 
-        //}
+            _subProjectRepoMock.Setup(x => x.GetAllIncluding())
+                .Returns(existingSubProjects.AsQueryable);
+
+
+            _projRepositoryMock.Setup(x => x.Delete(It.IsAny<Project>()));
+
+            // Act  
+            var result = _projectService.Delete(1);
+
+            //Assert
+
+            Assert.Contains(CommonConstant.ProjectMessages.ProjectExistsAsSubProject, result.ErrorMessages);
+            _subProjectRepoMock.Verify(x => x.Delete(It.IsAny<SubProject>()), Times.Never);
+        }
+
+
 
         //[Fact]
         //public void Ensure_Project_With_Tasks_Cannot_Delete()
         //{
+        //    Project myProject = new Project();
+
+        //    _projRepositoryMock.Setup(x => x.Get(It.IsAny<int>()))
+        //      .Returns(myProject);
+
+        //    _subProjectRepoMock.Setup(x => x.GetAllIncluding())
+        //        .Returns(Enumerable.Empty<SubProject>().AsQueryable);
+
+        //    var configSection = new Mock<IConfigurationSection>();
+
+        //    configSection.Setup(x => x.Value).Returns("{0}");
+        //    _mockConfig.Setup(x => x.GetSection(It.IsAny<String>())).Returns(configSection.Object);
+
+
+        //    _httpService.Setup(x => x.GetAsync<bool>(It.IsAny<string>())).Returns(new Task<bool>(() => true));
+
+
+        //    // Act  
+        //    var result = _projectService.Delete(1);
+
+        //    Assert.Contains(CommonConstant.ProjectMessages.TasksBelongToProject, result.ErrorMessages);
 
         //}
+
+        //[Fact]
+        //public void Ensure_Project_Can_Delete()
+        //{
+
+        //}
+
+
+
+
 
 
     }

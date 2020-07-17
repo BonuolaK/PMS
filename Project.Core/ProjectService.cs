@@ -1,6 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using PMS.Shared.Constants;
 using PMS.Shared.DataAccess;
+using PMS.Shared.HttpService;
 using PMS.Shared.Models;
 using Proj.Core.Dtos;
 using Proj.Core.Enums;
@@ -9,17 +12,31 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Proj.Core
 {
     public class ProjectService : IProjectService
     {
         private readonly IRepository<Project> _projectRepo;
+        private readonly IRepository<SubProject> _subProjRepo;
+        private IHttpService _httpService;
+        private readonly ILogger<ProjectService> _logger;
+        private readonly IConfiguration _configuration;
 
-        public ProjectService(IRepository<Project> projectRepo)
+        public ProjectService(IRepository<Project> projectRepo,
+            IRepository<SubProject> subProjectRepo,
+            IHttpService httpService,
+            ILogger<ProjectService> logger,
+            IConfiguration configuration)
         {
             _projectRepo = projectRepo;
+            _subProjRepo = subProjectRepo;
+            _httpService = httpService;
+            _logger = logger;
+            _configuration = configuration;
         }
 
 
@@ -43,8 +60,61 @@ namespace Proj.Core
 
         public ServiceResultModel<int> Delete(int id)
         {
-            throw new NotImplementedException();
+            var result = new ServiceResultModel<int>();
+            var project = Get(id);
+
+            if (project == null)
+                throw new ArgumentNullException();
+
+            // find subProjects
+
+            var subProjectCount = _subProjRepo.GetAllIncluding().Where(x => x.ChildId == project.Id).Count();
+
+            if (subProjectCount > 0)
+            {
+                result.AddError(CommonConstant.ProjectMessages.ProjectExistsAsSubProject);
+                return result;
+            }
+
+            // validate task exists
+            var taskServiceResponse =  ValidateTaskExistsForProject(project.Id);
+            if (taskServiceResponse.HasError)
+            {
+                result.AddError(taskServiceResponse.ErrorMessages.ElementAt(0));
+                return result;
+            }
+
+            if(taskServiceResponse.Data == true)
+            {
+                result.AddError(CommonConstant.ProjectMessages.TasksBelongToProject);
+                return result;
+            }
+
+            _projectRepo.Delete(project);
+            return result;
         }
+
+        // should utilize some service discovery implementation for more standard work
+        private  ServiceResultModel<bool> ValidateTaskExistsForProject(int projectId)
+        {
+            // validate project has tasks -- API CALL
+            _logger.LogInformation("---BEGIN API CALL");
+            var response = new ServiceResultModel<bool>();
+
+            try
+            {
+                var uri = _configuration.GetValue<string>(CommonConstant.GetTaskByProjectApiService);
+                response.Data = _httpService.GetAsync<bool>(string.Format(uri, projectId)).Result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation(ex.InnerException?.Message);
+                response.AddError("Error calling task service");
+            }
+
+            return response;
+        }
+
 
         public Project Get(int id)
         {
@@ -115,7 +185,7 @@ namespace Proj.Core
             if (stateChanged)
                 _projectRepo.Update(project);
             else
-                resultModel.AddError(ErrorConstant.ProjectMessages.ProjectChangeState);
+                resultModel.AddError(CommonConstant.ProjectMessages.ProjectChangeState);
 
             resultModel.Data = project;
 
@@ -143,7 +213,7 @@ namespace Proj.Core
                 {
                     Code = y.Child.Code,
                     FinishDate = y.Child.FinishDate,
-                    Id = y.Child.Id,
+                    Id = y.ChildId,
                     Name = y.Child.Name,
                     StartDate = y.Child.StartDate,
                     State = y.Child.State,
@@ -159,9 +229,25 @@ namespace Proj.Core
 
             subProjects = GetAll(x => newSubProjects.Contains(x.Id)).ToList();
 
+            if (model.Id == 0 && subProjects.Count() > 0 && subProjects.All(x => x.State == Enums.ProjectState.Completed))
+                resultModel.AddError(CommonConstant.ProjectMessages.ProjectsAllCompleted);
+
             if (subProjects.Count() != newSubProjects.Count())
-                resultModel.AddError(ErrorConstant.ProjectMessages.SubProjectsNotFound);
-            else
+                resultModel.AddError(CommonConstant.ProjectMessages.SubProjectsNotFound);
+
+            // validate project code exists
+            var existingProject = Get(x => x.Code == model.Code && x.Id != model.Id);
+
+            if (existingProject != null)
+                resultModel.AddError(CommonConstant.ProjectMessages.ProjectCodeExists);
+
+            // validate sub project is not a parent to the project
+           int verifyChildCannotBeParent = subProjects.Where(x => x.SubProjects.Select(x => x.Id).Contains(model.Id)).Count();
+
+            if(verifyChildCannotBeParent > 0)
+                resultModel.AddError(CommonConstant.ProjectMessages.ChildCannotBeParent);
+        
+            if (!resultModel.HasError)
             {
                 foreach (var project in subProjects)
                 {
@@ -171,21 +257,20 @@ namespace Proj.Core
                     });
                 }
             }
-
-            if (model.Id ==0 &&  subProjects.Count() > 0 && subProjects.All(x => x.State == Enums.ProjectState.Completed))
-                resultModel.AddError(ErrorConstant.ProjectMessages.ProjectsAllCompleted);
-
-            // validate project code exists
-            var existingProject = Get(x => x.Code == model.Code && x.Id != model.Id);
-
-            if (existingProject != null)
-                resultModel.AddError(ErrorConstant.ProjectMessages.ProjectCodeExists);
+            
 
             return resultModel;
 
         }
 
+        public void DeleteSubProject(int subProjectId)
+        {
+            var subProject = _subProjRepo.Get(subProjectId);
+            if (subProject == null)
+                throw new ArgumentNullException();
 
+            _subProjRepo.Delete(subProject);
+        }
     }
 
 

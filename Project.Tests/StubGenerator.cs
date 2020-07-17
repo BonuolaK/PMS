@@ -11,16 +11,24 @@ namespace Proj.Tests
         {
             yield return new object[] {
                 new List<Project>{new Project{
+                    Id = 1,
                     State = Core.Enums.ProjectState.Completed,
                     SubProjects = new List<SubProject>()
                 },
                 new Project{
+                     Id = 2,
+                    State = Core.Enums.ProjectState.Completed,
+                    SubProjects = new List<SubProject>()
+                },
+                new Project{
+                     Id = 3,
                     State = Core.Enums.ProjectState.Completed,
                     SubProjects = new List<SubProject>()
                 }
              }
             };
         }
+
 
         public static IEnumerable<object[]> GetProject()
         {
@@ -68,6 +76,7 @@ namespace Proj.Tests
             };
         }
 
+        
         public static IEnumerable<object[]> GetStateChangeProject()
         {
             yield return new object[] {

@@ -68,6 +68,25 @@ namespace Proj.Api.Controllers
             return Ok();
         }
 
+        [Route("subproject/{id}")]
+        [HttpDelete]
+        [ProducesResponseType(200)]
+        public IActionResult DeleteSubProject([FromRoute] int id)
+        {
+            try
+            {
+                _projectService.DeleteSubProject(id);
+
+            }
+            catch (Exception ex)
+            {
+                return HandleBadRequest(new List<string> { "Invalid operation" });
+            }
+
+
+            return Ok();
+        }
+
         [HttpPost]
         [ProducesResponseType(200)]
         public IActionResult Create([FromBody] ProjectCreateDto model)

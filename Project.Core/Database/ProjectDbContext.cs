@@ -13,9 +13,16 @@ namespace Proj.Core.Database
 
         public DbSet<SubProject> SubProjects { get; set; }
 
-        public ProjectDbContext(DbContextOptions options) : base(options)
+        public ProjectDbContext(DbContextOptions<ProjectDbContext> options) : base(options)
         {
 
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<SubProject>().HasOne(x => x.Parent).WithMany(x => x.SubProjects).HasForeignKey(x => x.ParentId).OnDelete(DeleteBehavior.Restrict);
+
+            base.OnModelCreating(modelBuilder);
         }
     }
 }

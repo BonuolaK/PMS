@@ -8,4 +8,8 @@
     <ProjectReference Include="..\PMS.Shared\PMS.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="ApiModels\" />
+  </ItemGroup>
+
 </Project>

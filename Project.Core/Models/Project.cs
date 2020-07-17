@@ -21,7 +21,6 @@ namespace Proj.Core.Models
 
         public ICollection<SubProject> SubProjects { get; set; }
 
-        public bool HasTask { get; set; }
 
     }
 }
