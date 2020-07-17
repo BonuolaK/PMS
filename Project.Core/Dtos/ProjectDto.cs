@@ -14,7 +14,7 @@ namespace Proj.Core.Dtos
 
         public DateTime StartDate { get; set; }
 
-        public DateTime FinishDate { get; set; }
+        public DateTime? FinishDate { get; set; }
 
         public ProjectState State { get; set; }
 

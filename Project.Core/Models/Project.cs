@@ -2,6 +2,7 @@
 using Proj.Core.Enums;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Proj.Core.Models
@@ -14,12 +15,13 @@ namespace Proj.Core.Models
 
         public DateTime StartDate { get; set; }
 
-        public DateTime FinishDate { get; set; }
+        public DateTime? FinishDate { get; set; }
 
         public ProjectState State { get; set; }
 
         public ICollection<SubProject> SubProjects { get; set; }
 
         public bool HasTask { get; set; }
+
     }
 }

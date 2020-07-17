@@ -17,7 +17,7 @@ namespace PMS.Shared.Models
         }
 
 
-        public List<string> ErrorMessages { get; set; }
+        public List<string> ErrorMessages { get; set; } = new List<string>();
 
         public T Data { get; set; }
 

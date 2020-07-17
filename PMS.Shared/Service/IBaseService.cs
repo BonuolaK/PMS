@@ -12,7 +12,10 @@ namespace PMS.Shared.Service
 
         ServiceResultModel<TEntity> Update(TCreateUpdateDto model);
 
+
         TEntity Get(int id);
+
+        TEntity Get(Expression<Func<TEntity, bool>> expression);
 
         IEnumerable<TEntityDto> GetAll();
 

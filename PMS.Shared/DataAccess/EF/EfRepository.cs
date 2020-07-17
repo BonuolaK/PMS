@@ -28,6 +28,13 @@ namespace PMS.Shared.DataAccess.EF
             return _dataContext.Set<T>().Find(id);
         }
 
+
+
+        public T Get(Expression<Func<T, bool>> filter)
+        {
+            return _dataContext.Set<T>().Where(filter).FirstOrDefault();
+        }
+
         public void Insert(T entity)
         {
             _dataContext.Set<T>().Add(entity);
@@ -37,6 +44,7 @@ namespace PMS.Shared.DataAccess.EF
         public IQueryable<T> GetAllIncluding(params Expression<Func<T, object>>[] propertySelectors)
         {
             var query = _dataContext.Set<T>().AsQueryable();
+
 
             if (propertySelectors.Count() > 0)
             {

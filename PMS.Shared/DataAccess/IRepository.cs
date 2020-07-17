@@ -8,7 +8,11 @@ namespace PMS.Shared.DataAccess
 {
     public interface IRepository<T> where T : class
     {
+
         T Get(int id);
+
+        T Get(Expression<Func<T, bool>> filter);
+
         IQueryable<T> GetAllIncluding(params Expression<Func<T, object>>[] propertySelectors);
         IList<T> List();
         IList<T> List(Expression<Func<T, bool>> expression);
