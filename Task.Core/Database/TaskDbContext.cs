@@ -9,13 +9,20 @@ namespace TaskSvc.Core.Database
 {
     public class TaskDbContext : BaseContext
     {
-        public DbSet<Task> Tasks { get; set; }
+        public DbSet<PMSTask> Tasks { get; set; }
 
         public DbSet<SubTask> SubTasks { get; set; }
 
-        public TaskDbContext(DbContextOptions options) : base(options)
+        public TaskDbContext(DbContextOptions<TaskDbContext> options) : base(options)
         {
 
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<SubTask>().HasOne(x => x.Parent).WithMany(x => x.SubTasks).HasForeignKey(x => x.ParentId).OnDelete(DeleteBehavior.Restrict);
+
+            base.OnModelCreating(modelBuilder);
         }
     }
 }

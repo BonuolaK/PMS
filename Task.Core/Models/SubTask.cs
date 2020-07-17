@@ -7,11 +7,11 @@ namespace TaskSvc.Core.Models
 {
     public class SubTask : BaseEntity
     {
-        public Task Parent { get; set; }
+        public PMSTask Parent { get; set; }
 
         public int ParentId { get; set; }
 
-        public Task Child { get; set; }
+        public PMSTask Child { get; set; }
 
         public int ChildId { get; set; }
     }

@@ -6,7 +6,7 @@ using TaskSvc.Core.Enums;
 
 namespace TaskSvc.Core.Models
 {
-    public class Task : BaseEntity
+    public class PMSTask : BaseEntity
     { 
         public int ProjectId { get; set; }
 
@@ -16,10 +16,12 @@ namespace TaskSvc.Core.Models
 
         public DateTime StartDate { get; set; }
 
-        public DateTime FinishDate { get; set; }
+        public DateTime? FinishDate { get; set; }
 
         public TaskState State { get; set; }
 
         public ICollection<SubTask> SubTasks { get; set; }
     }
+
+
 }

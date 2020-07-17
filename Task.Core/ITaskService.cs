@@ -7,7 +7,8 @@ using TaskSvc.Core.Models;
 
 namespace TaskSvc.Core
 {
-    public interface ITaskService : IBaseService<TaskCreateDto, Task, TaskDto>
-    {   
+    public interface ITaskService : IBaseService<TaskCreateDto, PMSTask, TaskDto>
+    {
+        void DeleteSubTask(int subTaskId);
     }
 }

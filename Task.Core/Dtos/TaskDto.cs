@@ -16,7 +16,7 @@ namespace TaskSvc.Core.Dtos
 
         public DateTime StartDate { get; set; }
 
-        public DateTime FinishDate { get; set; }
+        public DateTime? FinishDate { get; set; }
 
         public TaskState State { get; set; }
 

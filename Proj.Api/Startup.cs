@@ -36,7 +36,7 @@ namespace Proj.Api
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "pms_solutin", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "PMS_Project_Service", Version = "v1" });
             });
 
             services.AddDbContext<ProjectDbContext>(options =>

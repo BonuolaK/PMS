@@ -364,7 +364,7 @@ namespace Proj.Tests
             //Assert
 
             Assert.Contains(CommonConstant.ProjectMessages.ProjectExistsAsSubProject, result.ErrorMessages);
-            _subProjectRepoMock.Verify(x => x.Delete(It.IsAny<SubProject>()), Times.Never);
+            _projRepositoryMock.Verify(x => x.Delete(It.IsAny<Project>()), Times.Never);
         }
 
 

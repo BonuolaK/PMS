@@ -48,6 +48,20 @@ namespace Proj.Api.Controllers
                 return Ok(result);
         }
 
+        // add check-exists
+
+        [Route("check-exists")]
+        [HttpGet]
+        [ProducesResponseType(typeof(TaskDto), 200)]
+        public IActionResult GetTaskByProjectId([FromQuery] int projectId)
+        {
+            var result = _taskService.GetAll(x=> x.ProjectId == projectId);
+            if (result == null)
+                return NotFound();
+            else
+                return Ok(result.Count() > 0);
+        }
+
 
         [Route("{id}")]
         [HttpDelete]
@@ -63,6 +77,26 @@ namespace Proj.Api.Controllers
 
             if (result.HasError)
                 return HandleBadRequest(result.ErrorMessages);
+
+            return Ok();
+        }
+
+
+        [Route("subproject/{id}")]
+        [HttpDelete]
+        [ProducesResponseType(200)]
+        public IActionResult DeleteSubTask([FromRoute] int id)
+        {
+            try
+            {
+                _taskService.DeleteSubTask(id);
+
+            }
+            catch (Exception ex)
+            {
+                return HandleBadRequest(new List<string> { "Invalid operation" });
+            }
+
 
             return Ok();
         }
@@ -100,6 +134,7 @@ namespace Proj.Api.Controllers
 
             return Ok();
         }
+
 
     }
 }
