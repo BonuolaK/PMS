@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TaskSvc.Core.Dtos;
+using TaskSvc.Core.Enums;
 using TaskSvc.Core.Models;
 
 namespace TaskSvc.Core
@@ -120,9 +121,7 @@ namespace TaskSvc.Core
 
             _taskRepo.Update(task);
 
-            if (task.State == Enums.TaskState.Completed)
-                ConfirmTasksAreCompleted(task, new CancellationToken());
-
+          
             resultModel.Data = task;
 
             return resultModel;
@@ -235,6 +234,28 @@ namespace TaskSvc.Core
                  ProjectId = x.ProjectId
              }).ToList();
 
+        }
+
+        public ServiceResultModel<PMSTask> UpdateState(int taskId, TaskState state)
+        {
+            var resultModel = new ServiceResultModel<PMSTask>();
+
+            var task = _taskRepo.Get(taskId);
+
+            if (task == null)
+                throw new ArgumentNullException();
+
+
+            task.State = state;
+
+            _taskRepo.Update(task);
+
+            if (state == Enums.TaskState.Completed)
+                ConfirmTasksAreCompleted(task, new CancellationToken());
+
+            resultModel.Data = task;
+
+            return resultModel;
         }
     }
 }

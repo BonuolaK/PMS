@@ -23,6 +23,7 @@ namespace Proj.Api
                 c.AddConsumer<TaskCompletedMessageConsumer>();
             });
 
+
             services.AddSingleton(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
             {
                 cfg.Host(appSettings.QueueSettings.HostName, appSettings.QueueSettings.VirtualHost, (x =>

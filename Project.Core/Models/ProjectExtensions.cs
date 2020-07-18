@@ -13,13 +13,14 @@ namespace Proj.Core.Models
             stateChanged = false;
             ProjectState initialState = project.State;
 
-            if (project.SubProjects != default && project.SubProjects.Count > 0)
+            if (project.SubProjects != default && project.SubProjects.Count >= 0)
             {
-                if (project.SubProjects.All(x => x.Child.State == ProjectState.Completed))
+                if (project.SubProjects.Count == 0 || 
+                    project.SubProjects.All(x => x.Child.State == ProjectState.Completed))
                     project.State = ProjectState.Completed;
 
                 else if (project.SubProjects.Any(x => x.Child.State == ProjectState.InProgress))
-                    project.State = ProjectState.Completed;
+                    project.State = ProjectState.InProgress;
                 else
                     project.State = ProjectState.Planned;
             }

@@ -18,7 +18,8 @@ namespace Proj.Api
         private readonly IBusControl _busControl;
         private readonly IServiceProvider _serviceProvider;
         private readonly QueueSettings _queueSettings;
-        public BackgroundServiceWorker(IServiceProvider serviceProvider, ILogger<BackgroundServiceWorker> logger, 
+        public BackgroundServiceWorker(IServiceProvider serviceProvider,
+            ILogger<BackgroundServiceWorker> logger, 
             IBusControl busControl, QueueSettings queueSettings)
         {
             _logger = logger;
