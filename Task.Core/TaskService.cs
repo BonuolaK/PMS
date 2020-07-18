@@ -20,13 +20,15 @@ namespace TaskSvc.Core
     {
         private readonly IRepository<PMSTask> _taskRepo;
         private readonly IRepository<SubTask> _subTaskRepo;
-     //   private readonly IPublishEndpoint _publisher;
+        private readonly IPublishEndpoint _publisher;
 
         public TaskService(IRepository<PMSTask> taskRepo,
-            IRepository<SubTask> subTaskRepo)
+            IRepository<SubTask> subTaskRepo,
+            IPublishEndpoint publishEndpoint)
         {
             _taskRepo = taskRepo;
             _subTaskRepo = subTaskRepo;
+            _publisher = publishEndpoint;
         }
 
 
@@ -137,16 +139,14 @@ namespace TaskSvc.Core
             if(unCompletedProjectTasks == 0)
             {
 
-                //await _publisher.Publish<ITaskCompletedMessage>(new TaskCompletedMessage()
-                //{
-                //    MessageId = new Guid(),
-                //    ProjectId = task.ProjectId,
+                await _publisher.Publish<ITaskCompletedMessage>(new TaskCompletedMessage()
+                {
+                    MessageId = new Guid(),
+                    ProjectId = task.ProjectId,
 
-                //}, cancellationToken);
+                }, cancellationToken);
             }
         }
-
-
 
         private IQueryable<TaskDto> GetAllDto(Expression<Func<PMSTask, bool>> expression = default)
         {

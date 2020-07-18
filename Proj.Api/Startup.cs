@@ -48,6 +48,7 @@ namespace Proj.Api
             services.AddTransient<IRepository<Project>, EFRepository<Project>>();
             services.AddTransient<IRepository<SubProject>, EFRepository<SubProject>>();
             services.AddTransient<IProjectService, ProjectService>();
+            services.AddSingleton<Microsoft.Extensions.Hosting.IHostedService, BackgroundServiceWorker>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
