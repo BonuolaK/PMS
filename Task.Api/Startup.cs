@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using PMS.Shared.DataAccess;
 using PMS.Shared.DataAccess.EF;
+using PMS.Shared.PubSub;
 using TaskSvc.Core;
 using TaskSvc.Core.Database;
 using TaskSvc.Core.Models;
@@ -43,6 +44,7 @@ namespace Task.Api
             services.AddDbContext<TaskDbContext>(options =>
                     options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
+            services.RegisterQueueServices(Configuration);
 
             services.AddTransient<BaseContext, TaskDbContext>();
             services.AddTransient<IRepository<TaskSvc.Core.Models.PMSTask>, EFRepository<TaskSvc.Core.Models.PMSTask>>();

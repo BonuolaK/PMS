@@ -13,6 +13,7 @@ using PMS.Shared.Helpers;
 using PMS.Shared.NetCore;
 using TaskSvc.Core;
 using TaskSvc.Core.Dtos;
+using TaskSvc.Core.Enums;
 
 namespace Proj.Api.Controllers
 {
@@ -139,6 +140,29 @@ namespace Proj.Api.Controllers
 
             return Ok();
         }
+
+
+        [HttpPut]
+        [Route("{id}")]
+        [ProducesResponseType(200)]
+        public IActionResult UpdateStatus([FromRoute] int id, [FromBody]TaskState status)
+        {
+            if (!ModelState.IsValid)
+                return HandleBadRequest(ListModelErrors);
+
+            var project = _taskService.Get(id);
+
+            if (project == null)
+                return NotFound();
+
+            var result = _taskService.UpdateState(id, status);
+
+            if (result.HasError)
+                return HandleBadRequest(result.ErrorMessages);
+
+            return Ok();
+        }
+
 
 
         [Route("report")]

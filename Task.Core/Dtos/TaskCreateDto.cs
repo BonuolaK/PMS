@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
+using TaskSvc.Core.Enums;
 using TaskSvc.Core.Models;
 
 namespace TaskSvc.Core.Dtos
@@ -43,5 +44,10 @@ namespace TaskSvc.Core.Dtos
         }
     }
 
+    public class TaskUpdateDto : TaskCreateDto
+    {
+        public TaskState TaskState { get; set; }
+
+    }
 
 }

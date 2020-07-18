@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TaskSvc.Core.Dtos;
+using TaskSvc.Core.Enums;
 using TaskSvc.Core.Models;
 
 namespace TaskSvc.Core
@@ -20,13 +21,15 @@ namespace TaskSvc.Core
     {
         private readonly IRepository<PMSTask> _taskRepo;
         private readonly IRepository<SubTask> _subTaskRepo;
-     //   private readonly IPublishEndpoint _publisher;
+        private readonly IPublishEndpoint _publisher;
 
         public TaskService(IRepository<PMSTask> taskRepo,
-            IRepository<SubTask> subTaskRepo)
+            IRepository<SubTask> subTaskRepo,
+            IPublishEndpoint publishEndpoint)
         {
             _taskRepo = taskRepo;
             _subTaskRepo = subTaskRepo;
+            _publisher = publishEndpoint;
         }
 
 
@@ -118,9 +121,7 @@ namespace TaskSvc.Core
 
             _taskRepo.Update(task);
 
-            if (task.State == Enums.TaskState.Completed)
-                ConfirmTasksAreCompleted(task, new CancellationToken());
-
+          
             resultModel.Data = task;
 
             return resultModel;
@@ -137,16 +138,14 @@ namespace TaskSvc.Core
             if(unCompletedProjectTasks == 0)
             {
 
-                //await _publisher.Publish<ITaskCompletedMessage>(new TaskCompletedMessage()
-                //{
-                //    MessageId = new Guid(),
-                //    ProjectId = task.ProjectId,
+                await _publisher.Publish<ITaskCompletedMessage>(new TaskCompletedMessage()
+                {
+                    MessageId = new Guid(),
+                    ProjectId = task.ProjectId,
 
-                //}, cancellationToken);
+                }, cancellationToken);
             }
         }
-
-
 
         private IQueryable<TaskDto> GetAllDto(Expression<Func<PMSTask, bool>> expression = default)
         {
@@ -235,6 +234,28 @@ namespace TaskSvc.Core
                  ProjectId = x.ProjectId
              }).ToList();
 
+        }
+
+        public ServiceResultModel<PMSTask> UpdateState(int taskId, TaskState state)
+        {
+            var resultModel = new ServiceResultModel<PMSTask>();
+
+            var task = _taskRepo.Get(taskId);
+
+            if (task == null)
+                throw new ArgumentNullException();
+
+
+            task.State = state;
+
+            _taskRepo.Update(task);
+
+            if (state == Enums.TaskState.Completed)
+                ConfirmTasksAreCompleted(task, new CancellationToken());
+
+            resultModel.Data = task;
+
+            return resultModel;
         }
     }
 }

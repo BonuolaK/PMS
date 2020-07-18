@@ -23,7 +23,7 @@ namespace TaskSvc.Tests
         private readonly Mock<IRepository<PMSTask>> _taskRepositoryMock;
         private readonly Mock<IRepository<SubTask>> _subTaskRepoMock;
         private readonly Mock<IHttpService> _httpService;
-       // private readonly Mock<IPublishEndpoint> _publisher;
+        private readonly Mock<IPublishEndpoint> _publisher;
 
         // System under test
         private readonly ITaskService _taskService;
@@ -35,10 +35,10 @@ namespace TaskSvc.Tests
             _taskRepositoryMock = new Mock<IRepository<PMSTask>>();
             _subTaskRepoMock = new Mock<IRepository<SubTask>>();
             _httpService = new Mock<IHttpService>();
-          //  _publisher = new Mock<IPublishEndpoint>();
+            _publisher = new Mock<IPublishEndpoint>();
 
             _taskService = new TaskService(_taskRepositoryMock.Object,
-                _subTaskRepoMock.Object );
+                _subTaskRepoMock.Object, _publisher.Object);
 
             _newTask = new TaskCreateDto
             {
@@ -241,6 +241,38 @@ namespace TaskSvc.Tests
             //Assert
             Assert.Equal(3, result.Count());
         }
+
+
+        [Fact]
+        public void Ensure_Update_Task_State()
+        {
+
+            var parentProjectToUpdate = new PMSTask
+            {
+                State = Core.Enums.TaskState.Planned,
+                Id = 1,
+                SubTasks = new List<SubTask>()
+            };
+
+            // Arrange  
+            _taskRepositoryMock.Setup(x => x.Get(It.IsAny<int>()))
+                .Returns(parentProjectToUpdate);
+
+
+            _taskRepositoryMock.Setup(x => x.Update(It.IsAny<PMSTask>()))
+                 .Callback<PMSTask>((x) =>
+                 {
+                     parentProjectToUpdate = x;
+                 });
+
+            //TODO: mock publisher to mass transit in-memory queue implementation - publish in service commented out during this test
+
+            var result = _taskService.UpdateState(1,Core.Enums.TaskState.Completed);
+
+            //Assert
+            Assert.Equal(parentProjectToUpdate.State, result.Data.State);
+        }
+
 
 
         //[Fact]

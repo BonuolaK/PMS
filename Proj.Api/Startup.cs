@@ -18,6 +18,7 @@ using Proj.Core.Database;
 using Proj.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using PMS.Shared.HttpService;
+using PMS.Shared.NetCore;
 
 namespace Proj.Api
 {
@@ -43,11 +44,17 @@ namespace Proj.Api
                     options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
 
+            QueueSettings options = Configuration.GetSection("AppSettings").GetSection("QueueSettings").Get<QueueSettings>();
+
+            services.AddSingleton(options);
+
             services.AddTransient<BaseContext, ProjectDbContext>();
             services.AddTransient<IHttpService, HttpService>();
             services.AddTransient<IRepository<Project>, EFRepository<Project>>();
             services.AddTransient<IRepository<SubProject>, EFRepository<SubProject>>();
             services.AddTransient<IProjectService, ProjectService>();
+            services.RegisterQueueServices(Configuration);
+            services.AddSingleton<Microsoft.Extensions.Hosting.IHostedService, BackgroundServiceWorker>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
